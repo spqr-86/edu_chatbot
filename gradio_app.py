@@ -2,7 +2,7 @@ import gradio as gr
 from bot.chat_engine import ChatBot
 
 # Инициализируем чат-бота
-bot = ChatBot()
+bot = ChatBot("data/courses.csv")
 
 # Функция, принимающая сообщение от пользователя и возвращающая ответ бота
 def chatbot_interface(message):
