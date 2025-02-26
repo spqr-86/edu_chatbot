@@ -1,0 +1,4 @@
+course_id,course_name,instructor,schedule,description
+1,Python Programming,Ivan Ivanov,"Mon-Wed-Fri 10:00-11:30","Learn Python basics, from scratch"
+2,Data Science,Anna Petrova,"Tue-Thu 14:00-15:30","Data Science with Python: data analysis and machine learning"
+3,Web Development,Sergey Smirnov,"Mon-Wed 16:00-17:30","Full-stack web development course using Flask and React"

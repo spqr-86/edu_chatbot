@@ -1,6 +1,7 @@
 import pytest
 from bot.chat_engine import ChatBot
 from bot.faq_handler import FAQHandler
+from bot.data_integration import CoursesData
 
 
 @pytest.fixture
@@ -22,3 +23,11 @@ def test_faq_answer_found(faq):
 
 def test_faq_answer_not_found(faq):
     assert faq.find_answer("Какой у вас адрес офиса?") is None
+
+
+def test_query_courses():
+    courses = CoursesData(csv_path="data/courses.csv")
+    # Простой тест: запрос, содержащий ключевое слово "Python"
+    result = courses.query_courses("Расписание курса по Python")
+    assert "Python" in result or "Python Programming" in result
+
