@@ -1,56 +1,36 @@
 # bot/chat_engine.py
-import openai
+from langchain.llms import OpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
 from bot.config import OPENAI_API_KEY
 from bot.faq_handler import FAQHandler
-from bot.memory import Memory
-from bot.data_integration import CoursesData
 
 class ChatBot:
     def __init__(self):
-        self.client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        # Инициализируем LLM через LangChain
+        self.llm = OpenAI(api_key=OPENAI_API_KEY, model_name="gpt-3.5-turbo")
+        
+        # Создаем модуль памяти для сохранения истории беседы
+        self.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+        
+        # Инициализируем цепочку для ведения диалога
+        self.conversation = ConversationChain(llm=self.llm, memory=self.memory)
+        
+        # Инициализируем обработчик FAQ
         self.faq_handler = FAQHandler()
-        self.memory = Memory()
-        self.courses_data = CoursesData()
 
-    def is_course_query(self, message):
-        """
-        Определяет, относится ли запрос к курсам, используя ключевые слова.
-        """
-        keywords = ["курс", "расписание", "инструктор", "программа", "обучение"]
-        return any(keyword in message.lower() for keyword in keywords)
-
-    def get_response(self, message):
-        """
-        Обрабатывает сообщение:
-          1. Сначала ищет ответ в FAQ.
-          2. Если запрос связан с курсами – ищет релевантную информацию из CSV.
-          3. Иначе – добавляет сообщение в историю и обращается к OpenAI API.
-        """
-        # Проверка FAQ
+    def get_response(self, message: str) -> str:
+        # Сначала проверяем, есть ли ответ в FAQ
         faq_answer = self.faq_handler.find_answer(message)
         if faq_answer:
             return faq_answer
-
-        # Если запрос относится к курсам, ищем данные в CSV через LangChain
-        if self.is_course_query(message):
-            course_info = self.courses_data.query_courses(message)
-            if course_info:
-                return course_info
-
-        # Добавляем сообщение пользователя в память
-        self.memory.add_message("user", message)
-        chat_history = self.memory.get_history()
         
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=chat_history
-        )
-        bot_response = response.choices[0].message.content.strip()
-        self.memory.add_message("assistant", bot_response)
-        return bot_response
+        # Если нет, передаем запрос в цепочку диалога с сохранением контекста
+        return self.conversation.run(message)
 
 if __name__ == "__main__":
     bot = ChatBot()
+    print("Добро пожаловать в EduFuture ChatBot! (Введите 'exit' или 'quit' для завершения.)")
     while True:
         user_input = input("Вы: ")
         if user_input.lower() in ["exit", "quit"]:
@@ -58,3 +38,4 @@ if __name__ == "__main__":
             break
         response = bot.get_response(user_input)
         print(f"Бот: {response}")
+
