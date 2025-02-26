@@ -1,6 +1,17 @@
-# tests/test_faq.py
 import pytest
+from bot.chat_engine import ChatBot
 from bot.faq_handler import FAQHandler
+
+
+@pytest.fixture
+def bot():
+    return ChatBot()
+
+
+def test_bot_response(bot):
+    response = bot.get_response("Привет!")
+    assert isinstance(response, str)
+
 
 @pytest.fixture
 def faq():
